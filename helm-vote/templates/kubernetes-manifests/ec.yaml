@@ -50,3 +50,5 @@ spec:
           value: "{{ .Values.namespace}}.{{ .Values.services.ecserver.serviceName }}.{{ .Values.clusterIP }}.{{ .Values.clusterDomain }}"
         ports:
         - containerPort: 80
+        imagePullSecrets:
+        - name: regcred
