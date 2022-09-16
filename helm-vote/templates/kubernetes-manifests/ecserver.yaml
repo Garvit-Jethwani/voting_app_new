@@ -41,5 +41,5 @@ spec:
         image: '{{- printf "%s/%s:%s" .Values.registry .Values.services.ecserver.imageName .Values.tag -}}'
         ports:
         - containerPort: 8081
-        imagePullSecrets:
+      imagePullSecrets:
         - name: regcred
