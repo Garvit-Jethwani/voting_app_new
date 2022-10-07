@@ -1,0 +1,16 @@
+{
+  "appName": "events",
+  "userGivenName": "events",
+  "destNamespace": "codefreshtest",
+  "destServer": "https://kubernetes.default.svc",
+  "srcPath": "apps/events/overlays/codefreshtest",
+  "srcRepoURL": "https://github.com/Garvit-Jethwani/voting_app.git",
+  "srcTargetRevision": "",
+  "labels": {
+    "codefresh_io_entity": "component",
+    "codefresh_io_internal": "true"
+  },
+  "annotations": {
+    "argocd_argoproj_io_sync-wave": "0"
+  }
+}
