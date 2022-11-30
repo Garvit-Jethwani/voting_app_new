@@ -34,8 +34,8 @@ type CandidateVotes struct {
 	Votes       int    `json:"vote_count"`
 }
 
-// Response to send when voting result requested
-type Response struct {
+// ResultBoard to send when voting result requested
+type ResultBoard struct {
 	Results    []CandidateVotes `json:"results"`
 	TotalVotes int              `json:"total_votes"`
 }
@@ -77,7 +77,7 @@ func TestBallot() error {
 		return err
 	}
 	log.Println("get ballot resp:", string(result))
-	var initalRespData Response
+	var initalRespData ResultBoard
 	if err = json.Unmarshal(result, &initalRespData); err != nil {
 		log.Printf("Failed to unmarshal get ballot response. %+v", err)
 		return err
@@ -113,7 +113,7 @@ func TestBallot() error {
 		return err
 	}
 	log.Println("get final ballot resp:", string(result))
-	var finalRespData Response
+	var finalRespData ResultBoard
 	if err = json.Unmarshal(result, &finalRespData); err != nil {
 		log.Printf("Failed to unmarshal get final ballot response. %+v", err)
 		return err
@@ -154,29 +154,33 @@ func httpClientRequest(operation, hostAddr, command string, params io.Reader) (i
 	return resp.StatusCode, body, ioErr
 }
 
+// countVote to show in result board.
+func countVote() (res ResultBoard, err error) {
+	votes := getCandidatesVote()
+	for candidateID, votes := range votes {
+		res.Results = append(res.Results, CandidateVotes{candidateID, votes})
+		res.TotalVotes += votes
+	}
+
+	sort.Slice(res.Results, func(i, j int) bool {
+		return res.Results[i].Votes > res.Results[j].Votes
+	})
+	return res, err
+}
+
 func serveRoot(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	switch r.Method {
 	case http.MethodGet:
 		defer r.Body.Close()
 		log.Println("result request received")
-		res := Response{}
-		votes := getCandidatesVote()
-		for candidateID, votes := range votes {
-			res.Results = append(res.Results, CandidateVotes{candidateID, votes})
-			res.TotalVotes += votes
-		}
 
-		sort.Slice(res.Results, func(i, j int) bool {
-			return res.Results[i].Votes > res.Results[j].Votes
-		})
-
-		log.Printf("result data: %+v", res)
-
-		out, err := json.Marshal(res)
+		voteData, err := countVote()
+		out, err := json.Marshal(voteData)
 		if err != nil {
 			log.Println("error marshaling response to result request. error: ", err)
 		}
+
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(out)
 

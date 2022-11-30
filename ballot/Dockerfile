@@ -13,15 +13,15 @@ FROM alpine as ballottest
 LABEL maintainer="mgdevstack" \
     vendor="Zettabytes" \
     owner="zbio"
-COPY --from=builder /go/ballot.test /ballot.test
+COPY --from=builder /go/ballot.test /usr/local/bin/ballot.test
 USER nobody
-ENTRYPOINT ["/ballot.test"]
+CMD ["ballot.test", "-test.v"]
 
 ## Main ballot application container
 FROM alpine
 LABEL maintainer="mgdevstack" \
     vendor="Zettabytes" \
     owner="zbio"
-COPY --from=builder /go/ballot /ballot
+COPY --from=builder /go/ballot /usr/local/bin/ballot
 USER nobody
-ENTRYPOINT ["/ballot"]
+CMD [ "ballot" ] 

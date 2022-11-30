@@ -25,13 +25,15 @@ func TestVoteCount(t *testing.T) {
 		t.Errorf("expected sucessful response status. got %v", status)
 	}
 
+	vv, _ := countVote()
+	votesBeforeVoting := vv.TotalVotes
+	expectedCount := votesBeforeVoting
     // Validate vote counts
 	votes := []Vote{
         {CandidateID: "Roost", VoterID: "1"},
 		{CandidateID: "Rancher", VoterID: "2"},
 		{CandidateID: "Docker Desktop", VoterID: "3"},
 	}
-    initialVotesInStore := len(candidateVotesStore)
 	for _, v := range votes {
 		b, _ := json.Marshal(v)
 		req = httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(b))
@@ -40,15 +42,20 @@ func TestVoteCount(t *testing.T) {
 		handler = http.HandlerFunc(serveRoot)
 		handler.ServeHTTP(rec, req)
 
-		if status := rec.Code; status != http.StatusOK {
+		if status := rec.Code; status == http.StatusOK {
+			expectedCount++
+		}else{	
 			t.Errorf("expected successful response status. got %v", status)
 		}
 	}
 
-	newVotes := len(candidateVotesStore) - initialVotesInStore
-	givenVotes := len(votes)
-	if newVotes != givenVotes {
-		t.Logf("expected total votes count %v, got %v", givenVotes, newVotes)
+	vv, _ = countVote()
+	votesAfterVoting := vv.TotalVotes
+	
+	t.Log("total votes done:", votesAfterVoting)
+	
+	if votesAfterVoting != expectedCount{
+		t.Logf("expected total votes count %v, got %v", votesAfterVoting, expectedCount)
 		t.FailNow()
 	}
 }
