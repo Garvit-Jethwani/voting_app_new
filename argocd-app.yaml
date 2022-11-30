@@ -18,6 +18,8 @@ spec:
                   value: latest
                 - name: 'namespace'
                   value: $ARGOCD_APP_NAMESPACE
+                - name: 'clusterIP'
+                  value: $ROOST_CLUSTER_IP
     destination:
         server: https://kubernetes.default.svc
         namespace: to-be-replaced

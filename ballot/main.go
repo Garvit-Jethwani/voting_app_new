@@ -184,15 +184,15 @@ func serveRoot(w http.ResponseWriter, r *http.Request) {
 		log.Println("vote received")
 		vote := Vote{}
 		status := Status{}
+		defer writeVoterResponse(w, status)
 		defer r.Body.Close()
 
 		decoder := json.NewDecoder(r.Body)
 		err := decoder.Decode(&vote)
-		if err != nil {
+		if err != nil || vote.CandidateID == "" {
 			log.Printf("error parsing vote data. error: %v\n", err)
 			status.Code = http.StatusBadRequest
 			status.Message = "Vote is not valid. Vote can not be saved"
-			writeVoterResponse(w, status)
 			return
 		}
 		log.Printf("Voting done by voter: %s to candidate: %s\n", vote.VoterID, vote.CandidateID)
@@ -201,19 +201,16 @@ func serveRoot(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 			status.Code = http.StatusBadRequest
 			status.Message = "Vote is not valid. Vote can not be saved"
-			writeVoterResponse(w, status)
 			return
 		}
 		status.Code = http.StatusCreated
 		status.Message = "Vote saved sucessfully"
-		writeVoterResponse(w, status)
 		return
 
 	default:
 		status := Status{}
 		status.Code = http.StatusMethodNotAllowed
 		status.Message = "Bad Request. Vote can not be saved"
-		writeVoterResponse(w, status)
 		return
 	}
 }
