@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NETLIFY_ACCESS_TOKEN=hB0t9oK07gmj4ea_yLBx6Ey9aI9GFHSfmbsA5FXstAg
+
 output=$(curl --location --request POST "https://api.netlify.com/api/v1/sites" \
 --header "Authorization: Bearer ${NETLIFY_ACCESS_TOKEN}" \
 --header "Content-Type: application/json" \
@@ -11,10 +11,6 @@ output=$(curl --location --request POST "https://api.netlify.com/api/v1/sites" \
         "installation_id": 32021058,
         "repo": "ishanrai13/voter",
         "private": true,
-        "env" : {
-            "REACT_APP_BALLOT_ENDPOINT": "test",
-            "REACT_APP_ECSERVER_ENDPOINT": "test"
-        },
         "branch": "main",
         "frameworkName": "Create React App",
         "dir": "build",
@@ -59,19 +55,29 @@ account_id=$(echo $account_output | jq -r '.[0].id')
 
 echo $account_id
 
+EncodedBallotEndpoint=$(echo $ROOST_CLUSTER_IP:30040 | base64 )
+EncodedEcserverEndpoint=$(echo $ROOST_CLUSTER_IP:30042 | base64 )
+
 setenv_output=$(curl --location --request POST "https://api.netlify.com/api/v1/accounts/${account_id}/env?site_id=${site_id}" \
 --header "Authorization: Bearer ${NETLIFY_ACCESS_TOKEN}" \
 --header 'Content-Type: application/json' \
---data-raw '[
+--data-raw "[
   {
-    "key": "REACT_APP_BALLOT",
-    "values": [
+    \"key\": \"REACT_APP_BALLOT_ENDPOINT\",
+    \"values\": [
       {
-        "value": "string"
+        \"value\": \"https://zbio.roost.io/proxy/${EncodedBallotEndpoint}\"
       }
     ]
-  }
-]'
+  },
+  {
+    \"key\": \"REACT_APP_ECSERVER_ENDPOINT\",
+    \"values\": [
+      {
+        \"value\": \"https://zbio.roost.io/proxy/${EncodedEcserverEndpoint}\"
+      }
+    ]
+  }]"
 )
 
 echo ${setenv_output}
